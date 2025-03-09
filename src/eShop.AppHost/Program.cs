@@ -4,6 +4,9 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddForwardedHeaders();
 
+// Add observability containers (Prometheus, Grafana, OpenTelemetry Collector)
+builder.AddObservability();
+
 var redis = builder.AddRedis("redis");
 var rabbitMq = builder.AddRabbitMQ("eventbus")
     .WithLifetime(ContainerLifetime.Persistent);

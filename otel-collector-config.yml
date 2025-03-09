@@ -8,10 +8,41 @@ receivers:
   prometheus:
     config:
       scrape_configs:
+        # Microservicos
         - job_name: 'basket-api'
           scrape_interval: 5s
           static_configs:
             - targets: [ 'host.docker.internal:5221' ]
+              
+        - job_name: "catalog-api"
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ "host.docker.internal:5222" ]
+
+        - job_name: "identity-api"
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ "host.docker.internal:5223" ]
+
+        - job_name: "ordering-api"
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ "host.docker.internal:5224" ]
+
+        - job_name: "mobile-bff"
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ "host.docker.internal:11632" ]
+
+        - job_name: "payment-processor"
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ "host.docker.internal:5226" ]
+
+        - job_name: "webhooks-api"
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ "host.docker.internal:5227" ]
 
 exporters:
   prometheus:

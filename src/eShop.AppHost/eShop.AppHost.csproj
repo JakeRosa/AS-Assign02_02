@@ -32,4 +32,15 @@
     <ProjectReference Include="..\WebhookClient\WebhookClient.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\prometheus.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>prometheus\prometheus.yml</Link>
+    </Content>
+    <Content Include="..\..\otel-collector-config.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>otel\otel-collector-config.yml</Link>
+    </Content>
+  </ItemGroup>
+
 </Project>

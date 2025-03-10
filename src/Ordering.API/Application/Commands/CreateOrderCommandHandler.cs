@@ -1,6 +1,13 @@
-﻿namespace eShop.Ordering.API.Application.Commands;
+﻿using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Logging;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace eShop.Ordering.API.Application.Commands;
 
 using eShop.Ordering.Domain.AggregatesModel.OrderAggregate;
+
+using MediatR;
 
 // Regular CommandHandler
 public class CreateOrderCommandHandler
@@ -11,19 +18,22 @@ public class CreateOrderCommandHandler
     private readonly IMediator _mediator;
     private readonly IOrderingIntegrationEventService _orderingIntegrationEventService;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
+    private readonly Counter<long> _orderPlacedCounter;
 
     // Using DI to inject infrastructure persistence Repositories
     public CreateOrderCommandHandler(IMediator mediator,
         IOrderingIntegrationEventService orderingIntegrationEventService,
         IOrderRepository orderRepository,
         IIdentityService identityService,
-        ILogger<CreateOrderCommandHandler> logger)
+        ILogger<CreateOrderCommandHandler> logger, 
+        Counter<long> orderPlacedCounter)
     {
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _orderingIntegrationEventService = orderingIntegrationEventService ?? throw new ArgumentNullException(nameof(orderingIntegrationEventService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _orderPlacedCounter = orderPlacedCounter ?? throw new ArgumentNullException(nameof(orderPlacedCounter));
     }
 
     public async Task<bool> Handle(CreateOrderCommand message, CancellationToken cancellationToken)
@@ -43,6 +53,10 @@ public class CreateOrderCommandHandler
         {
             order.AddOrderItem(item.ProductId, item.ProductName, item.UnitPrice, item.Discount, item.PictureUrl, item.Units);
         }
+
+        _logger.LogInformation("Incrementing Order Placed Counter");
+        _orderPlacedCounter.Add(1, new KeyValuePair<string, object>("userId", message.UserId));
+        _logger.LogInformation("Order Placed Counter Incremented");
 
         _logger.LogInformation("Creating Order - Order: {@Order}", order);
 

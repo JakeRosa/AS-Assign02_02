@@ -47,9 +47,16 @@ receivers:
 exporters:
   prometheus:
     endpoint: "0.0.0.0:9464"
+#  otlp:
+#    endpoint: "jaeger:4317"
+#    tls:
+#      insecure: true
 
 service:
   pipelines:
     metrics:
       receivers: [otlp, prometheus]
       exporters: [prometheus]
+#    traces:
+#      receivers: [ otlp ]
+#      exporters: [ otlp ]

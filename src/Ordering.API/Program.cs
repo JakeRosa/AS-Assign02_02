@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.Metrics;
 using OpenTelemetry.Metrics;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,31 @@ builder.AddDefaultOpenApi(withApiVersioning);
 // Creating meter
 var meter = new Meter("Ordering.API");
 builder.Services.AddSingleton(meter);
-builder.Services.AddSingleton(meter.CreateCounter<long>("order_placed_count", description: "Número total de orders."));
+
+// Registre as métricas com chaves específicas
+builder.Services.AddKeyedSingleton<Counter<long>>("orderPlacedCounter", 
+    meter.CreateCounter<long>("order_placed_count", description: "Número total de pedidos criados"));
+    
+builder.Services.AddKeyedSingleton<Counter<long>>("orderPaidCounter", 
+    meter.CreateCounter<long>("order_paid_count", description: "Número total de pedidos pagos"));
+    
+builder.Services.AddKeyedSingleton<Histogram<double>>("orderProcessingTimeHistogram", 
+    meter.CreateHistogram<double>("order_processing_time_seconds", description: "Tempo de processamento de pedidos em segundos"));
+    
+builder.Services.AddKeyedSingleton<Histogram<double>>("paymentProcessingTimeHistogram", 
+    meter.CreateHistogram<double>("order_payment_processing_time_seconds", description: "Tempo de processamento de pagamentos em segundos"));
+    
+builder.Services.AddKeyedSingleton<Counter<long>>("orderItemsCounter", 
+    meter.CreateCounter<long>("order_items_count", description: "Número total de itens em pedidos"));
+    
+builder.Services.AddKeyedSingleton<Counter<long>>("orderValueCounter", 
+    meter.CreateCounter<long>("order_value_total", unit: "currency", description: "Valor total dos pedidos"));
+    
+builder.Services.AddKeyedSingleton<Counter<long>>("orderProcessingErrorsCounter", 
+    meter.CreateCounter<long>("order_processing_errors", description: "Número de erros no processamento de pedidos"));
+    
+builder.Services.AddKeyedSingleton<Counter<long>>("paymentProcessingErrorsCounter", 
+    meter.CreateCounter<long>("payment_processing_errors", description: "Número de erros no processamento de pagamentos"));
 
 // Config meters
 builder.Services.AddOpenTelemetry()
@@ -31,9 +56,6 @@ builder.Services.AddOpenTelemetry()
     });
 
 var app = builder.Build();
-
-// I don't need this I think
-// app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.MapDefaultEndpoints();
 

@@ -48,7 +48,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, boo
     public async Task<bool> Handle(CreateOrderCommand message, CancellationToken cancellationToken)
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        
+
         try
         {
             // Add Integration event to clean the basket
@@ -73,22 +73,22 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, boo
             // Métricas
             _logger.LogInformation("Incrementing Order Placed Counter");
             _orderPlacedCounter.Add(1, new KeyValuePair<string, object>("userId", message.UserId));
-            
+
             // Contador de itens
             _orderItemsCounter.Add(totalItems, new KeyValuePair<string, object>("orderId", order.Id.ToString()));
-            
+
             // Valor total do pedido
             _orderValueCounter.Add((long)orderTotal, new KeyValuePair<string, object>("orderId", order.Id.ToString()));
-            
+
             _logger.LogInformation("Creating Order - Order: {@Order}", order);
 
             _orderRepository.Add(order);
 
             var result = await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-            
+
             stopwatch.Stop();
             // Registrar tempo de processamento em segundos
-            _orderProcessingTimeHistogram.Record(stopwatch.Elapsed.TotalSeconds, 
+            _orderProcessingTimeHistogram.Record(stopwatch.Elapsed.TotalSeconds,
                 new KeyValuePair<string, object>("orderId", order.Id.ToString()),
                 new KeyValuePair<string, object>("userId", message.UserId));
             
